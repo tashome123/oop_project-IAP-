@@ -1,10 +1,19 @@
 <?php
+session_start();
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// 1. Require the new config file FIRST
+require_once 'conf.php';
+
+// 2. Then require the other files
+require 'vendor/autoload.php';
 require_once 'classes/Database.php';
 require_once 'classes/User.php';
 
+// 3. Database object is created (it will now see the constants)
 $database = new Database();
 $db = $database->getConnection();
-
 $user = new User($db);
 
 $message = "";
@@ -17,13 +26,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $result = $user->register();
 
-    if ($result === true) {
-        $message = "<div class='alert alert-success'>Registration successful!</div>";
+    if (is_string($result) && strlen($result) == 6) {
+        $verification_code = $result;
+        $mail = new PHPMailer(true);
+
+        try {
+            // 4. Use the new constants for email
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USER;
+            $mail->Password   = SMTP_PASS;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+
+            $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
+            $mail->addAddress($user->email, $user->username);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Verify Your Account - OOP Project';
+            $mail->Body    = "Hello <strong>{$user->username}</strong>,<br><br>
+                              Your verification code is: <strong>{$verification_code}</strong><br><br>
+                              Please enter this code on the verification page.";
+            $mail->AltBody = "Your verification code is: {$verification_code}";
+
+            $mail->send();
+
+            header("Location: verify.php?email=" . urlencode($user->email));
+            exit;
+
+        } catch (Exception $e) {
+            $message = "<div class='alert alert-danger'>
+                        Registration successful, but the email could not be sent.
+                        Mailer Error: {$mail->ErrorInfo}
+                        </div>";
+        }
+
     } else {
         $message = "<div class='alert alert-danger'>Error: " . $result . "</div>";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -37,9 +81,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-5">
             <h2>User Registration</h2>
-            <p>An OOP PHP Lab Assignment</p>
 
             <?php echo $message; ?>
 
@@ -56,8 +99,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label for="password" class="form-label">Password (min 8 chars)</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Register</button>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
+            <div class="text-center mt-3">
+                <p>Already have an account? <a href="login.php">Login here</a></p>
+            </div>
         </div>
     </div>
 </div>

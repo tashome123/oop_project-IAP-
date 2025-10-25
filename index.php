@@ -1,13 +1,18 @@
 <?php
+session_start();
+require_once 'conf.php';
 require_once 'classes/Database.php';
 require_once 'classes/User.php';
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
 $database = new Database();
 $db = $database->getConnection();
-
 $user = new User($db);
 
-// Call the read method
 $stmt = $user->read();
 $num = $stmt->rowCount();
 ?>
@@ -17,7 +22,7 @@ $num = $stmt->rowCount();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User List</title>
+    <title>Registered Users</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -27,7 +32,12 @@ $num = $stmt->rowCount();
         <a class="navbar-brand" href="index.php">OOP HP Lab</a>
         <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-                <a class="nav-link" href="register.php">Register</a>
+                    <span class="navbar-text me-3">
+                        Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>
+                    </span>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-outline-light" href="logout.php">Logout</a>
             </li>
         </ul>
     </div>
@@ -36,7 +46,7 @@ $num = $stmt->rowCount();
 <div class="container mt-5">
     <div class="row">
         <div class="col-12">
-            <h2>Registered Users</h2>
+            <h2>Registered Users (Task #10)</h2>
 
             <?php
             if ($num > 0) {
@@ -47,25 +57,27 @@ $num = $stmt->rowCount();
                 echo "<th>Username</th>";
                 echo "<th>Email</th>";
                 echo "<th>Registered On</th>";
+                echo "<th>Verified</th>";
                 echo "</tr>";
                 echo "</thead>";
                 echo "<tbody>";
 
-                // Loop through the results
                 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     extract($row);
+                    $verified_status = $is_verified ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning">No</span>';
                     echo "<tr>";
                     echo "<td>{$id}</td>";
                     echo "<td>{$username}</td>";
                     echo "<td>{$email}</td>";
                     echo "<td>{$created_at}</td>";
+                    echo "<td>{$verified_status}</td>";
                     echo "</tr>";
                 }
 
                 echo "</tbody>";
                 echo "</table>";
             } else {
-                echo "<div class='alert alert-info'>No users found. Go register one!</div>";
+                echo "<div class='alert alert-info'>No users found.</div>";
             }
             ?>
         </div>
