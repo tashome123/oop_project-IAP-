@@ -3,6 +3,7 @@
 
 class Database {
 
+    private $port = "3307";
     private $host = "localhost";
     private $db_name = "lab_assignment";
     private $username = "root";
@@ -11,21 +12,19 @@ class Database {
 
 
     public function getConnection() {
-        $this->conn = null; 
+        $this->conn = null;
 
         try {
-
+            // FIX IS HERE: Added the port variable to the connection string
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
+                "mysql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name,
                 $this->username,
                 $this->password
             );
 
-
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         } catch(PDOException $exception) {
-
             echo "Connection error: " . $exception->getMessage();
         }
 
