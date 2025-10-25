@@ -1,5 +1,6 @@
 <?php
-class User {
+class User
+{
     private $conn;
     private $table_name = "users";
 
@@ -8,11 +9,13 @@ class User {
     public $email;
     public $password;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function login() {
+    public function login()
+    {
         if (empty($this->email) || empty($this->password)) {
             return "Email and password are required.";
         }
@@ -43,7 +46,8 @@ class User {
         }
     }
 
-    public function register() {
+    public function register()
+    {
 
         if (empty($this->username) || empty($this->email) || empty($this->password)) {
             return "All fields are required.";
@@ -86,7 +90,8 @@ class User {
         return false;
     }
 
-    public function verifyAccount($email, $code) {
+    public function verifyAccount($email, $code)
+    {
         if (empty($email) || empty($code)) {
             return "Email and code are required.";
         }
@@ -116,7 +121,8 @@ class User {
         return "Invalid email or verification code.";
     }
 
-    private function isAlreadyExists() {
+    private function isAlreadyExists()
+    {
         $query = "SELECT id FROM " . $this->table_name . "
                   WHERE username = :username OR email = :email
                   LIMIT 1";
@@ -126,13 +132,14 @@ class User {
         $stmt->bindParam(":email", $this->email);
         $stmt->execute();
 
-        if($stmt->rowCount() > 0) {
+        if ($stmt->rowCount() > 0) {
             return true;
         }
         return false;
     }
 
-    public function read() {
+    public function read()
+    {
         $query = "SELECT
                     id, username, email, created_at, is_verified
                   FROM
@@ -145,3 +152,4 @@ class User {
         $stmt->execute();
         return $stmt;
     }
+}
