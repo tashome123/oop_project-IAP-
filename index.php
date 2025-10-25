@@ -71,7 +71,7 @@ $product_num = $product_stmt->rowCount();
                     echo "<td>{$id}</td>";
                     echo "<td>{$name}</td>";
                     echo "<td>{$description}</td>";
-                    echo "<td>$" . number_format($price, 2) . "</td>";
+                    echo "<td>Kshs " . number_format($price, 2) . "</td>";
                     echo "<td>{$added_at}</td>";
                     echo "</tr>";
                 }
